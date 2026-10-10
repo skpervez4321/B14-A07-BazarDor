@@ -1,48 +1,55 @@
-import { getCategories, getProducts } from "@/lib/api";
-import {
-  formatPrice,
-  getBanglaDate,
-  getChangeInfo,
-  sortProducts,
-  toBnDigits,
-  topFallers,
-  topRisers,
-  unitLabel,
-} from "@/lib/format";
+import { getProducts } from "@/lib/api";
+import { toBnDigits, topFallers, topRisers } from "@/lib/format";
+import Hero from "@/components/Hero";
+import PriceMovers from "@/components/PriceMovers";
+import ProductCard from "@/components/ProductCard";
 
 export default async function Home() {
-  const [products, categories] = await Promise.all([
-    getProducts(),
-    getCategories(),
-  ]);
-
-  const first = products[0];
-  const change = getChangeInfo(first?.change);
-  const cheapest = sortProducts(products, "price-asc")[0];
+  // API ফেল করলে পেজ না ভেঙে ফাঁকা তালিকা দেখাবে
+  let products = [];
+  try {
+    products = await getProducts();
+  } catch {
+    products = [];
+  }
 
   return (
-    <main className="min-h-screen bg-base-100 text-base-content p-8 space-y-3">
-      <h1 className="text-3xl font-bold">🛒 বাজার দর</h1>
-      <p>{getBanglaDate()}</p>
-      <p>
-        মোট পণ্য: {toBnDigits(products.length)} | ক্যাটাগরি:{" "}
-        {toBnDigits(categories.length)}
-      </p>
-      <p>
-        দাম বেড়েছে: {toBnDigits(topRisers(products).length)} | কমেছে:{" "}
-        {toBnDigits(topFallers(products).length)}
-      </p>
-      {first && (
-        <p>
-          {first.image} {first.nameBn} — {unitLabel(first.unit)} —{" "}
-          {formatPrice(first.today)} {change.label}
-        </p>
-      )}
-      {cheapest && (
-        <p>
-          সবচেয়ে কম দাম: {cheapest.nameBn} — {formatPrice(cheapest.today)}
-        </p>
-      )}
-    </main>
+    <div className="mx-auto flex max-w-6xl flex-col gap-10 px-4 py-6">
+      <Hero />
+
+      <PriceMovers
+        title="আজ দাম বেড়েছে"
+        icon="▲"
+        iconClass="text-error"
+        products={topRisers(products)}
+      />
+
+      <PriceMovers
+        title="আজ দাম কমেছে"
+        icon="▼"
+        iconClass="text-success"
+        products={topFallers(products)}
+      />
+
+      <section id="সব-পণ্য" className="flex flex-col gap-3">
+        <h2 className="text-xl font-bold">সব পণ্য</h2>
+        <div className="flex flex-col gap-4">
+          <p className="text-sm">
+            মোট {toBnDigits(products.length)}টি পণ্য দেখানো হচ্ছে
+          </p>
+          {products.length === 0 ? (
+            <p className="rounded-2xl border border-base-300 bg-base-100 p-6 text-center">
+              এই মুহূর্তে দাম আনা যাচ্ছে না। একটু পরে আবার চেষ্টা করুন।
+            </p>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {products.map((product) => (
+                <ProductCard key={product.id} product={product} />
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+    </div>
   );
 }

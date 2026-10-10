@@ -27,7 +27,7 @@ export default function RootLayout({ children }) {
       >
         <Header />
         <Ticker />
-        <div className="flex-1">{children}</div>
+        <main className="flex-1 bg-base-200">{children}</main>
         <Footer />
         <ToasterProvider />
       </body>
