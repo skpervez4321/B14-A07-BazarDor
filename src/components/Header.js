@@ -1,7 +1,10 @@
 import Link from "next/link";
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
 import { getCategories } from "@/lib/api";
 import { getBanglaDate } from "@/lib/format";
 import CategoryNav from "@/components/CategoryNav";
+import UserMenu from "@/components/UserMenu";
 
 export default async function Header() {
   // API ফেল করলেও যেন পুরো সাইট না ভাঙে
@@ -10,6 +13,15 @@ export default async function Header() {
     categories = await getCategories();
   } catch {
     categories = [];
+  }
+
+  // কেউ সাইন ইন করা আছে কি না দেখা
+  let user = null;
+  try {
+    const session = await auth.api.getSession({ headers: await headers() });
+    user = session?.user ?? null;
+  } catch {
+    user = null;
   }
 
   return (
@@ -26,12 +38,18 @@ export default async function Header() {
         </Link>
 
         <div className="flex items-center gap-2">
-          <Link href="/signin" className="btn btn-ghost btn-sm sm:btn-md">
-            সাইন ইন
-          </Link>
-          <Link href="/signup" className="btn btn-primary btn-sm sm:btn-md">
-            সাইন আপ
-          </Link>
+          {user ? (
+            <UserMenu name={user.name} email={user.email} />
+          ) : (
+            <>
+              <Link href="/signin" className="btn btn-ghost btn-sm sm:btn-md">
+                সাইন ইন
+              </Link>
+              <Link href="/signup" className="btn btn-primary btn-sm sm:btn-md">
+                সাইন আপ
+              </Link>
+            </>
+          )}
         </div>
       </div>
 
