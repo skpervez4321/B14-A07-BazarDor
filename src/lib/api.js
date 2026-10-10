@@ -1,7 +1,4 @@
-const BASE_URLS = [
-  "https://api.api-store.workers.dev/api/bazardor",
-  "https://api.abcz.workers.dev/api/bazardor",
-];
+const BASE_URLS = ["https://openapi.programming-hero.com/api/bazardor"];
 
 async function request(path) {
   let lastError = null;
